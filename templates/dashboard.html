@@ -1,1 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Rex Real-Time Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <h2>🛡️ Rex Live Traffic Monitor</h2>
 
+  <canvas id="trafficChart" width="700" height="350"></canvas>
+
+  <div id="latest-requests">
+    <h4>🕒 Latest Requests</h4>
+    <div id="request-log"></div>
+  </div>
+
+  <script src="{{ url_for('static', filename='dashboard.js') }}"></script>
+</body>
+</html>
