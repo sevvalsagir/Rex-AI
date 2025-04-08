@@ -1,0 +1,41 @@
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #0f0f0f;
+    color: #ffffff;
+    text-align: center;
+    padding: 30px;
+  }
+  
+  h2 {
+    color: #00ffc8;
+    margin-bottom: 20px;
+  }
+  
+  #trafficChart {
+    max-width: 700px;
+    margin: 0 auto 40px;
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 20px;
+  }
+  
+  #latest-requests {
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: left;
+    background: #1c1c1c;
+    border: 1px solid #333;
+    padding: 20px;
+    border-radius: 8px;
+  }
+  
+  #latest-requests h4 {
+    margin-top: 0;
+    color: #00ffc8;
+  }
+  
+  .latest-entry {
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+  }
+  
