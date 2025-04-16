@@ -21,7 +21,7 @@ socketio = SocketIO(app)
 # Paths
 LOG_FILE = "live_log.csv"
 ATTACK_LOG_FILE = "attack_log.csv"
-MODEL_FILE = "model/rex_multiclass_model.pkl"
+MODEL_FILE = "model/rex_model.pkl"
 
 LABEL_MAP = {
     0: "✅ NORMAL",
@@ -77,26 +77,25 @@ def track():
 
     try:
         prediction = int(model.predict(features)[0])
-
         label_text = LABEL_MAP.get(prediction, "❓ Unknown")
-
-        log_entry = pd.DataFrame([{
-            "timestamp": timestamp,
-            "source_ip": ip,
-            "url": url,
-            "user_agent": user_agent,
-            "status_code": status_code,
-            "label": prediction
-        }])
-        write_header = not os.path.exists(LOG_FILE)
-        log_entry.to_csv(LOG_FILE, mode='a', header=write_header, index=False)
-
     except Exception as e:
         print(f"❌ [track()] prediction hatası: {e}")
-        prediction = 5  # default 'Other'
+        prediction = 5  # fallback → "Other"
         label_text = LABEL_MAP.get(prediction, "❓ Unknown")
 
-    # Emit to dashboard
+    # ✅ CSV'ye yazımı her durumda yap
+    log_entry = pd.DataFrame([{
+        "timestamp": timestamp,
+        "source_ip": ip,
+        "url": url,
+        "user_agent": user_agent,
+        "status_code": status_code,
+        "label": prediction
+    }])
+    write_header = not os.path.exists(LOG_FILE)
+    log_entry.to_csv(LOG_FILE, mode='a', header=write_header, index=False)
+
+    # Dashboard'a gönder
     socketio.emit("new_request", {
         "ip": ip,
         "url": url,
@@ -105,7 +104,6 @@ def track():
         "label": label_text
     })
 
-    # Eğer saldırıysa...
     if prediction != 0:
         register_attack()
 
@@ -158,6 +156,7 @@ def track():
 
     print(f"[DEBUG] features: {features} → Prediction: {prediction}")
     return "OK"
+
 
 @app.route("/api/normal-requests")
 def api_normal_requests():
