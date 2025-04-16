@@ -13,7 +13,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 🔵 Chart.js contextleri
   const attackCtx = document.getElementById('attackChart').getContext('2d');
-  const normalCtx = document.getElementById('normalChart').getContext('2d');
 
   // 🔴 Chart state'leri
   const attackCounts = {};
@@ -25,11 +24,42 @@ document.addEventListener("DOMContentLoaded", () => {
     options: { scales: { y: { beginAtZero: true } } }
   });
 
+  const normalCtx = document.getElementById("normalChart").getContext("2d");
   const normalChart = new Chart(normalCtx, {
-    type: 'bar',
-    data: { labels: [], datasets: [{ label: 'Normal Requests', data: [], backgroundColor: 'mediumseagreen' }] },
-    options: { scales: { y: { beginAtZero: true } } }
+    type: "bar",
+    data: {
+      labels: [],
+      datasets: [{
+        label: "Normal Requests",
+        data: [],
+        backgroundColor: "#4caf50"
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        y: { beginAtZero: true }
+      }
+    }
   });
+
+  function updateNormalRequestsChart() {
+    fetch("/api/normal-requests")
+      .then(res => res.json())
+      .then(data => {
+        normalChart.data.labels = data.labels;
+        normalChart.data.datasets[0].data = data.counts;
+        normalChart.update();
+      });
+  }
+
+// Her 10 saniyede bir güncelle
+updateNormalRequestsChart();
+setInterval(updateNormalRequestsChart, 10000);
+
 
   // 🧠 WebSocket bağlantı kontrol
   socket.on('connect', () => {
@@ -41,10 +71,40 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("📥 new_request received:", req);
 
     const { ip, url, timestamp, is_attack, label } = req;
-    const emoji = label || (is_attack ? "🚨 ATTACK" : "✅ NORMAL");    
+    const labelEmoji = label || (is_attack ? "🚨 ATTACK" : "✅ NORMAL");
+    
+    const entry = document.createElement("div");
+    entry.className = `latest-entry ${is_attack ? "attack-entry" : "normal-entry"}`;
+    entry.innerText = `${timestamp} — ${ip} → ${url} → ${labelEmoji}`;
+    
+    logDiv.prepend(entry);
+    if (logDiv.children.length > 5) logDiv.removeChild(logDiv.lastChild);
+    
+    // 📊 Grafiğe IP ekle
+    if (is_attack) {
+      attackCounts[ip] = (attackCounts[ip] || 0) + 1;
+      const idx = attackChart.data.labels.indexOf(ip);
+      if (idx >= 0) {
+        attackChart.data.datasets[0].data[idx] = attackCounts[ip];
+      } else {
+        attackChart.data.labels.push(ip);
+        attackChart.data.datasets[0].data.push(attackCounts[ip]);
+      }
+      attackChart.update();
+    } else {
+      normalCounts[ip] = (normalCounts[ip] || 0) + 1;
+      const idx = normalChart.data.labels.indexOf(ip);
+      if (idx >= 0) {
+        normalChart.data.datasets[0].data[idx] = normalCounts[ip];
+      } else {
+        normalChart.data.labels.push(ip);
+        normalChart.data.datasets[0].data.push(normalCounts[ip]);
+      }
+      normalChart.update();
+    }
+     
     const cssClass = is_attack ? "attack-entry" : "normal-entry";
 
-    const entry = document.createElement("div");
     entry.className = `latest-entry ${cssClass}`;
     entry.innerText = `${timestamp} — ${ip} → ${url} → ${emoji}`;
 
@@ -142,6 +202,8 @@ const stackedChart = new Chart(stackedCtx, {
     }
   }
 });
+
+
 
 function updateHourlyStackedChart() {
   fetch("/api/hourly-stacked-data")

@@ -77,6 +77,7 @@ def track():
 
     try:
         prediction = int(model.predict(features)[0])
+
         label_text = LABEL_MAP.get(prediction, "❓ Unknown")
 
         log_entry = pd.DataFrame([{
@@ -157,6 +158,24 @@ def track():
 
     print(f"[DEBUG] features: {features} → Prediction: {prediction}")
     return "OK"
+
+@app.route("/api/normal-requests")
+def api_normal_requests():
+    if not os.path.exists(LOG_FILE):
+        return {"labels": [], "counts": []}
+
+    df = pd.read_csv(LOG_FILE)
+    if "label" not in df.columns or "source_ip" not in df.columns:
+        return {"labels": [], "counts": []}
+
+    # Sadece label=0 olanlar (NORMAL)
+    normal_df = df[df["label"] == 0]
+    ip_counts = normal_df["source_ip"].value_counts().head(10)
+
+    return {
+        "labels": ip_counts.index.tolist(),
+        "counts": ip_counts.values.tolist()
+    }
 
 
 @app.route("/label")
@@ -340,6 +359,8 @@ def resolve_country(ip):
     except:
         return "Unknown"
     
+
+
 @app.route("/api/hourly-attack-data")
 def api_hourly_attack_data():
     if not os.path.exists(ATTACK_LOG_FILE):
