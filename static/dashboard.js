@@ -184,6 +184,18 @@ setInterval(updateNormalRequestsChart, 10000);
   setInterval(updateHourlyChart, 10000);
 });
 
+function retrainModel() {
+  fetch("/retrain")
+      .then(res => res.text())
+      .then(html => {
+          document.getElementById("retrain-status").innerHTML = html;
+      })
+      .catch(err => {
+          document.getElementById("retrain-status").innerText = "❌ Hata oluştu.";
+      });
+}
+
+
 const stackedCtx = document.getElementById("hourlyStackedChart").getContext("2d");
 const stackedChart = new Chart(stackedCtx, {
   type: "bar",

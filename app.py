@@ -13,6 +13,7 @@ from attack_counter import register_attack, check_alarm, should_send_email
 import yagmail
 import config_email
 from datetime import datetime
+from train_model_multiclass import retrain_model
 
 
 app = Flask(__name__)
@@ -156,6 +157,16 @@ def track():
 
     print(f"[DEBUG] features: {features} → Prediction: {prediction}")
     return "OK"
+
+
+
+@app.route("/retrain")
+def retrain_endpoint():
+    try:
+        retrain_model()
+        return "<h3>✅ Model başarıyla yeniden eğitildi!</h3>"
+    except Exception as e:
+        return f"<h3>❌ Hata oluştu: {str(e)}</h3>"
 
 
 @app.route("/api/normal-requests")
