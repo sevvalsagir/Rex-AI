@@ -40,8 +40,8 @@ document.addEventListener("DOMContentLoaded", () => {
   socket.on("new_request", (req) => {
     console.log("📥 new_request received:", req);
 
-    const { ip, url, timestamp, is_attack } = req;
-    const emoji = is_attack ? "🚨 ATTACK" : "✅ NORMAL";
+    const { ip, url, timestamp, is_attack, label } = req;
+    const emoji = label || (is_attack ? "🚨 ATTACK" : "✅ NORMAL");    
     const cssClass = is_attack ? "attack-entry" : "normal-entry";
 
     const entry = document.createElement("div");
@@ -65,6 +65,44 @@ document.addEventListener("DOMContentLoaded", () => {
     chart.update();
   });
 
+  const pieCtx = document.getElementById("labelPieChart").getContext("2d");
+    const pieChart = new Chart(pieCtx, {
+      type: "pie",
+      data: {
+        labels: [],
+        datasets: [{
+          label: "Saldırı Türü",
+          data: [],
+          backgroundColor: [
+            "#00ffc8", // Normal
+            "#ff5c5c", // DDoS
+            "#ffa500", // Brute-force
+            "#3399ff", // Port Scan
+            "#cc66ff", // SQLi
+            "#999999"  // Other
+          ]
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: "bottom" }
+        }
+      }
+    });
+  
+    function updatePieChart() {
+      fetch("/api/label-distribution")
+        .then(res => res.json())
+        .then(data => {
+          pieChart.data.labels = data.labels;
+          pieChart.data.datasets[0].data = data.counts;
+          pieChart.update();
+        });
+    }
+  
+    updatePieChart();
+    setInterval(updatePieChart, 10000);
   // 🌡️ Saatlik grafik
   const hourlyCtx = document.getElementById("hourlyChart").getContext("2d");
   const hourlyChart = new Chart(hourlyCtx, {
@@ -85,3 +123,35 @@ document.addEventListener("DOMContentLoaded", () => {
   updateHourlyChart();
   setInterval(updateHourlyChart, 10000);
 });
+
+const stackedCtx = document.getElementById("hourlyStackedChart").getContext("2d");
+const stackedChart = new Chart(stackedCtx, {
+  type: "bar",
+  data: {
+    labels: [],
+    datasets: []
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { position: "bottom" }
+    },
+    scales: {
+      x: { stacked: true },
+      y: { stacked: true }
+    }
+  }
+});
+
+function updateHourlyStackedChart() {
+  fetch("/api/hourly-stacked-data")
+    .then(res => res.json())
+    .then(data => {
+      stackedChart.data.labels = data.labels;
+      stackedChart.data.datasets = data.datasets;
+      stackedChart.update();
+    });
+}
+
+updateHourlyStackedChart();
+setInterval(updateHourlyStackedChart, 10000);

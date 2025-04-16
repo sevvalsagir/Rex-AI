@@ -44,6 +44,15 @@
 <body>
   <h2>🛡️ Rex Live Traffic Monitor</h2>
 
+
+  <div style="text-align: center; margin-top: 30px;">
+    <a href="/label" style="text-decoration: none;">
+      <button style="padding: 10px 20px; font-size: 16px; background-color: #007bff; border: none; color: white; border-radius: 8px;">
+        🏷️ Veri Etiketleme Sayfası
+      </button>
+    </a>
+  </div>
+  
   <div id="latest-requests">
     <h4>🕒 Latest Requests</h4>
     <div id="request-log"></div>
@@ -59,6 +68,19 @@
       <canvas id="normalChart"></canvas>
     </div>
   </div>
+
+  <div class="chart-section">
+    <div class="chart-container" style="width: 400px;">
+      <h3 style="color: #ffa500;">🍩 Saldırı Türü Dağılımı</h3>
+      <canvas id="labelPieChart"></canvas>
+    </div>
+    
+    <div class="chart-container" style="width: 600px;">
+      <h3 style="color: #00bfff;">📊 Saatlik Saldırı Türleri</h3>
+      <canvas id="hourlyStackedChart"></canvas>
+    </div>
+  </div>
+  
 
   <script>
     setInterval(() => {
